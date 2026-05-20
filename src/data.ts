@@ -1,12 +1,44 @@
-export const sample = {
+export type ItemStatus = "backlog" | "active" | "blocked" | "ready" | "done";
+
+export type WorkItem = {
+  id: string;
+  title: string;
+  category: string;
+  owner: string;
+  status: ItemStatus;
+  priority: number;
+  effort: number;
+  friction: number;
+  value: number;
+  due: string;
+  notes: string;
+};
+
+export type QualityCheck = {
+  id: string;
+  label: string;
+  passed: boolean;
+  weight: number;
+};
+
+export const sample: {
+  repoName: string;
+  title: string;
+  subtitle: string;
+  serviceLine: string;
+  description: string;
+  repositoryUrl: string;
+  liveDemoUrl: string;
+  theme: { accent: string; accent2: string; ink: string; soft: string; warm: string };
+  items: WorkItem[];
+  checks: QualityCheck[];
+  deliverables: string[];
+} = {
   "repoName": "foxhen-form-to-dashboard",
   "title": "Form To Dashboard",
-  "subtitle": "Response intake turned into decisions",
+  "subtitle": "intake dashboard",
   "serviceLine": "Form and dashboard automation",
-  "heroTitle": "Turn noisy form responses into an operator dashboard.",
-  "heroCopy": "A sample intake-to-dashboard flow with response quality, KPI summaries, issue routing, and handoff notes for a fictional services team.",
-  "primaryAction": "Route responses",
-  "secondaryAction": "Inspect KPIs",
+  "description": "Normalize fictional form responses into KPIs, owner queues, urgency flags, and exportable notes.",
   "repositoryUrl": "https://github.com/foxandhenllc/foxhen-form-to-dashboard",
   "liveDemoUrl": "https://foxhen-form-to-dashboard.vercel.app",
   "theme": {
@@ -14,115 +46,124 @@ export const sample = {
     "accent2": "#f2b45c",
     "ink": "#101708",
     "soft": "#eff7e9",
-    "warm": "#fff2dc",
-    "surface": "#fffaf4",
-    "muted": "#5c667a",
-    "border": "rgba(7, 18, 31, 0.12)"
+    "warm": "#fff2dc"
   },
-  "metrics": [
+  "items": [
     {
-      "label": "Responses parsed",
-      "value": "128",
-      "note": "sample rows"
-    },
-    {
-      "label": "Routing accuracy",
-      "value": "91%",
-      "note": "+22 pts"
-    },
-    {
-      "label": "Open issues",
-      "value": "11",
-      "note": "triaged"
-    }
-  ],
-  "stages": [
-    {
-      "label": "Collect",
-      "detail": "Capture form rows and identify missing contact, service type, and urgency fields.",
-      "status": "ready",
-      "owner": "Form",
-      "index": 1
-    },
-    {
-      "label": "Normalize",
-      "detail": "Convert raw answers into consistent categories and scored urgency.",
-      "status": "active",
-      "owner": "Automation",
-      "index": 2
-    },
-    {
-      "label": "Route",
-      "detail": "Send each response to the right owner queue with clear next action.",
-      "status": "waiting",
-      "owner": "Team",
-      "index": 3
-    },
-    {
-      "label": "Report",
-      "detail": "Summarize weekly KPIs and unresolved intake problems.",
-      "status": "queued",
-      "owner": "Ops",
-      "index": 4
-    }
-  ],
-  "workItems": [
-    {
+      "id": "for-1",
       "title": "Service type",
-      "detail": "Normalize inconsistent category labels",
-      "status": "ready"
+      "category": "Intake",
+      "owner": "Chris",
+      "status": "active",
+      "priority": 5,
+      "effort": 2,
+      "friction": 1,
+      "value": 5,
+      "due": "Today",
+      "notes": "Sample intake dashboard work item for form and dashboard automation."
     },
     {
+      "id": "for-2",
       "title": "Urgency score",
-      "detail": "Rank high-risk submissions",
-      "status": "active"
+      "category": "Build",
+      "owner": "Fox & Hen",
+      "status": "backlog",
+      "priority": 4,
+      "effort": 4,
+      "friction": 2,
+      "value": 4,
+      "due": "24h",
+      "notes": "Sample intake dashboard work item for form and dashboard automation."
     },
     {
+      "id": "for-3",
       "title": "Missing contact",
-      "detail": "Waiting on validation rule",
-      "status": "waiting"
+      "category": "Review",
+      "owner": "Buyer",
+      "status": "blocked",
+      "priority": 3,
+      "effort": 3,
+      "friction": 4,
+      "value": 4,
+      "due": "48h",
+      "notes": "Sample intake dashboard work item for form and dashboard automation."
     },
     {
+      "id": "for-4",
+      "title": "Issue queue",
+      "category": "Export",
+      "owner": "Automation",
+      "status": "ready",
+      "priority": 4,
+      "effort": 2,
+      "friction": 2,
+      "value": 3,
+      "due": "This week",
+      "notes": "Sample intake dashboard work item for form and dashboard automation."
+    },
+    {
+      "id": "for-5",
+      "title": "KPI summary",
+      "category": "Intake",
+      "owner": "QA",
+      "status": "backlog",
+      "priority": 2,
+      "effort": 1,
+      "friction": 1,
+      "value": 3,
+      "due": "Waiting",
+      "notes": "Sample intake dashboard work item for form and dashboard automation."
+    },
+    {
+      "id": "for-6",
       "title": "Weekly memo",
-      "detail": "Queued for export",
-      "status": "queued"
+      "category": "Build",
+      "owner": "Chris",
+      "status": "done",
+      "priority": 5,
+      "effort": 5,
+      "friction": 3,
+      "value": 5,
+      "due": "Next pass",
+      "notes": "Sample intake dashboard work item for form and dashboard automation."
+    }
+  ],
+  "checks": [
+    {
+      "id": "payer",
+      "label": "Payer or owner is clear",
+      "passed": true,
+      "weight": 18
+    },
+    {
+      "id": "deliverable",
+      "label": "Deliverable has acceptance criteria",
+      "passed": true,
+      "weight": 18
+    },
+    {
+      "id": "friction",
+      "label": "Account/access friction is documented",
+      "passed": false,
+      "weight": 14
+    },
+    {
+      "id": "handoff",
+      "label": "Handoff package is generated",
+      "passed": false,
+      "weight": 16
+    },
+    {
+      "id": "reuse",
+      "label": "Repeatable pipeline note exists",
+      "passed": true,
+      "weight": 12
     }
   ],
   "deliverables": [
-    {
-      "title": "Dashboard view",
-      "detail": "Operator-friendly KPIs, filters, and response queues."
-    },
-    {
-      "title": "Data rules",
-      "detail": "Readable normalization rules for future maintenance."
-    },
-    {
-      "title": "Handoff memo",
-      "detail": "Exact unresolved issues and next automation candidates."
-    }
-  ],
-  "timeline": [
-    {
-      "time": "0-2 hrs",
-      "detail": "Map form fields and reporting goal"
-    },
-    {
-      "time": "2-12 hrs",
-      "detail": "Build dashboard and routing logic"
-    },
-    {
-      "time": "12-24 hrs",
-      "detail": "QA edge cases and prepare handoff"
-    }
-  ],
-  "proof": [
-    "Matches fast workflow automation work.",
-    "Demonstrates a clear before-after path from form chaos to action.",
-    "Static sample data only; no live form connection."
+    "Ranked board",
+    "Editable item inspector",
+    "Readiness checklist",
+    "Exportable handoff report"
   ]
-} as const;
-
-export type StageStatus = "ready" | "active" | "waiting" | "queued";
-export type DemoStage = (typeof sample.stages)[number];
-export type WorkItem = (typeof sample.workItems)[number];
+};
