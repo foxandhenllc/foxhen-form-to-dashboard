@@ -129,41 +129,41 @@ export const sample: {
     }
   ],
   "checks": [
-    {
-      "id": "payer",
-      "label": "Payer or owner is clear",
-      "passed": true,
-      "weight": 18
-    },
-    {
-      "id": "deliverable",
-      "label": "Deliverable has acceptance criteria",
-      "passed": true,
-      "weight": 18
-    },
-    {
-      "id": "friction",
-      "label": "Account/access friction is documented",
-      "passed": false,
-      "weight": 14
-    },
-    {
-      "id": "handoff",
-      "label": "Handoff package is generated",
-      "passed": false,
-      "weight": 16
-    },
-    {
-      "id": "reuse",
-      "label": "Repeatable pipeline note exists",
-      "passed": true,
-      "weight": 12
-    }
+      {
+          "id": "owner",
+          "label": "Response routing owner is clear",
+          "passed": true,
+          "weight": 18
+      },
+      {
+          "id": "criteria",
+          "label": "Dashboard field mapping is written",
+          "passed": true,
+          "weight": 18
+      },
+      {
+          "id": "data",
+          "label": "Missing form fields are documented",
+          "passed": false,
+          "weight": 14
+      },
+      {
+          "id": "handoff",
+          "label": "Dashboard memo/export is generated",
+          "passed": false,
+          "weight": 16
+      },
+      {
+          "id": "reuse",
+          "label": "Repeatable intake mapping note exists",
+          "passed": true,
+          "weight": 12
+      }
   ],
   "deliverables": [
-    "Ranked board",
-    "Editable item inspector",
-    "Readiness checklist",
-    "Exportable handoff report"
+      "Normalized intake queue",
+      "Editable response inspector",
+      "Dashboard readiness checklist",
+      "Exportable KPI memo"
   ]
 };

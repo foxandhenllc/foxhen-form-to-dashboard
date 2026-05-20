@@ -11,6 +11,14 @@ const statusLabels: Record<ItemStatus, string> = {
   done: "Done",
 };
 
+const stageCopy: Record<ItemStatus, string> = {
+  backlog: "Capture incoming work before it disappears.",
+  active: "Move the highest-value items through the sprint.",
+  blocked: "Expose decisions, missing context, and access friction.",
+  ready: "Package items that can be handed off or shipped.",
+  done: "Keep completed examples visible for reuse.",
+};
+
 function scoreItem(item: WorkItem) {
   const statusBoost = { backlog: 0, active: 10, blocked: -12, ready: 18, done: 8 }[item.status];
   return item.priority * 18 + item.value * 14 - item.friction * 9 - item.effort * 4 + statusBoost;
@@ -77,7 +85,7 @@ function App() {
       friction: 2,
       value: 4,
       due: "24h",
-      notes: "New sample item added from the live demo.",
+      notes: `New fictional ${sample.serviceLine.toLowerCase()} item added from the live demo.`,
     };
     setItems((current) => [item, ...current]);
     setSelectedId(item.id);
@@ -102,20 +110,24 @@ function App() {
   function generateReport() {
     const lines = [
       `${sample.title} handoff report`,
+      `Workflow: ${sample.serviceLine}`,
       `Readiness: ${readiness}%`,
-      `Top item: ${topItem.title} (${statusLabels[topItem.status]})`,
+      `Best next move: ${topItem.title} (${statusLabels[topItem.status]}, score ${scoreItem(topItem)})`,
       "",
       "Prioritized work:",
-      ...filteredItems.slice(0, 5).map((item, index) => `${index + 1}. ${item.title} — score ${scoreItem(item)}, owner ${item.owner}, due ${item.due}`),
+      ...filteredItems.slice(0, 5).map((item, index) => `${index + 1}. ${item.title} — ${item.category}, owner ${item.owner}, due ${item.due}, score ${scoreItem(item)}`),
       "",
-      "Open checks:",
-      ...checks.filter((check) => !check.passed).map((check) => `- ${check.label}`),
+      "Quality gates still open:",
+      ...(checks.filter((check) => !check.passed).map((check) => `- ${check.label}`).length ? checks.filter((check) => !check.passed).map((check) => `- ${check.label}`) : ["- None"]),
+      "",
+      "Fork notes:",
+      ...sample.deliverables.map((deliverable) => `- Keep: ${deliverable}`),
     ];
     setReport(lines.join("\n"));
   }
 
   function downloadJson() {
-    const payload = JSON.stringify({ generatedAt: new Date().toISOString(), readiness, items, checks }, null, 2);
+    const payload = JSON.stringify({ generatedAt: new Date().toISOString(), readiness, workflow: sample.serviceLine, items, checks, deliverables: sample.deliverables }, null, 2);
     const url = URL.createObjectURL(new Blob([payload], { type: "application/json" }));
     const link = document.createElement("a");
     link.href = url;
@@ -136,8 +148,9 @@ function App() {
         </a>
         <nav>
           <a href="#board">Board</a>
+          <a href="#template">Workflow</a>
           <a href="#inspector">Inspector</a>
-          <a className="nav-button" href={sample.repositoryUrl}>Repository</a>
+          <a className="nav-button" href={sample.repositoryUrl}>Fork repo</a>
         </nav>
       </header>
 
@@ -146,7 +159,7 @@ function App() {
           <div>
             <p className="service-line">{sample.serviceLine}</p>
             <h1>{sample.description}</h1>
-            <p className="lede">This is a working public sample: edit records, change scoring inputs, run a sprint simulation, generate a handoff report, and export the current state.</p>
+            <p className="lede">A forkable, public-safe operating tool with fictional data, editable scoring, workflow gates, a handoff report, and JSON export for adapting into your own {sample.subtitle} process.</p>
             <div className="hero-actions">
               <button type="button" className="primary-action" onClick={runSprintSimulation}>Run 24h sprint simulation</button>
               <button type="button" className="secondary-action" onClick={generateReport}>Generate handoff report</button>
@@ -159,21 +172,37 @@ function App() {
             </div>
             <div className="meter"><span style={{ width: `${readiness}%` }} /></div>
             <div className="metric-grid">
-              <article><span>Ready/done</span><strong>{readyCount}</strong><small>items packaged</small></article>
+              <article><span>Packaged</span><strong>{readyCount}</strong><small>ready or done</small></article>
               <article><span>Blocked</span><strong>{blockedCount}</strong><small>needs decision</small></article>
-              <article><span>Top score</span><strong>{scoreItem(topItem)}</strong><small>{topItem.title}</small></article>
+              <article><span>Best next</span><strong>{scoreItem(topItem)}</strong><small>{topItem.title}</small></article>
             </div>
           </aside>
+        </section>
+
+        <section id="template" className="template-strip">
+          <div>
+            <p className="service-line">Forkable workflow template</p>
+            <h2>Use this as a starter operating loop, not a static board.</h2>
+          </div>
+          <div className="stage-grid">
+            {statusOrder.map((status) => (
+              <article key={status}>
+                <span className={`status ${status}`}>{statusLabels[status]}</span>
+                <strong>{items.filter((item) => item.status === status).length} items</strong>
+                <p>{stageCopy[status]}</p>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section id="board" className="board-layout">
           <div className="section-heading">
             <p>Working tool</p>
-            <h2>Prioritize, edit, advance, and package the sample work.</h2>
+            <h2>Prioritize, edit, advance, and package this {sample.subtitle} sample.</h2>
           </div>
 
           <div className="controls">
-            <input aria-label="Search work items" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search title, owner, category..." />
+            <input aria-label="Search work items" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search title, owner, category, notes..." />
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as ItemStatus | "all")}>
               <option value="all">All statuses</option>
               {statusOrder.map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}
@@ -183,7 +212,7 @@ function App() {
               <option value="effort">Sort by fastest effort</option>
               <option value="friction">Sort by lowest friction</option>
             </select>
-            <button type="button" onClick={addWorkItem}>Add sample item</button>
+            <button type="button" onClick={addWorkItem}>Add fictional item</button>
           </div>
 
           <div className="work-grid">
@@ -193,6 +222,7 @@ function App() {
                   <span className={`status ${item.status}`}>{statusLabels[item.status]}</span>
                   <strong>{item.title}</strong>
                   <small>{item.category} · {item.owner} · due {item.due}</small>
+                  <div className="score-row"><span>P{item.priority}</span><span>V{item.value}</span><span>E{item.effort}</span><span>F{item.friction}</span></div>
                   <em>Score {scoreItem(item)}</em>
                 </button>
               ))}
@@ -204,6 +234,7 @@ function App() {
                 <button type="button" onClick={() => advanceItem(selected.id)}>Advance status</button>
               </div>
               <h3>{selected.title}</h3>
+              <p className="inspector-note">Tune owner, notes, and scoring to see how the handoff package changes.</p>
               <label>Owner<input value={selected.owner} onChange={(event) => updateItem(selected.id, { owner: event.target.value })} /></label>
               <label>Notes<textarea value={selected.notes} onChange={(event) => updateItem(selected.id, { notes: event.target.value })} /></label>
               <div className="slider-grid">
@@ -221,7 +252,7 @@ function App() {
         <section className="package-grid">
           <div className="checklist-card">
             <p className="service-line">QA gates</p>
-            <h2>Toggle the checks that make this ready to hand off.</h2>
+            <h2>Toggle the checks that make this workflow ready to reuse.</h2>
             <div className="check-list">
               {checks.map((check) => (
                 <button key={check.id} type="button" className={check.passed ? "check passed" : "check"} onClick={() => toggleCheck(check.id)}>
@@ -236,6 +267,9 @@ function App() {
           <div className="report-card">
             <p className="service-line">Export</p>
             <h2>Generate a buyer-readable package.</h2>
+            <ul className="deliverable-list">
+              {sample.deliverables.map((deliverable) => <li key={deliverable}>{deliverable}</li>)}
+            </ul>
             <div className="hero-actions">
               <button type="button" className="primary-action" onClick={generateReport}>Refresh report</button>
               <button type="button" className="secondary-action" onClick={downloadJson}>Download JSON</button>
