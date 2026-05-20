@@ -1,282 +1,128 @@
-import { useMemo, useState, type CSSProperties } from "react";
-import { sample, type ItemStatus, type QualityCheck, type WorkItem } from "./data";
+import { useMemo, useState } from "react";
+import { AdapterDocs } from "./components/AdapterDocs";
+import { CsvPanel } from "./components/CsvPanel";
+import { FieldMappingPanel } from "./components/FieldMappingPanel";
+import { KpiCards } from "./components/KpiCards";
+import { SampleForm } from "./components/SampleForm";
+import { SchemaDesigner } from "./components/SchemaDesigner";
+import { StatusPipeline } from "./components/StatusPipeline";
+import { SubmissionsTable } from "./components/SubmissionsTable";
+import { adapterNotes, sampleFieldMapping, sampleFormSchema, sampleSubmissions } from "./data/sampleWorkflow";
+import { parseCsv, serializeCsv } from "./exporters/csv";
+import { createSubmissionFromValues, deriveExportColumns, summarizeDashboard } from "./lib/workflow";
+import type { FieldMapping, FormSchema, SubmissionRow, SubmissionStatus } from "./lib/types";
 import "./styles.css";
 
-const statusOrder: ItemStatus[] = ["backlog", "active", "blocked", "ready", "done"];
-const statusLabels: Record<ItemStatus, string> = {
-  backlog: "Backlog",
-  active: "Active",
-  blocked: "Blocked",
-  ready: "Ready",
-  done: "Done",
-};
-
-const stageCopy: Record<ItemStatus, string> = {
-  backlog: "Capture incoming work before it disappears.",
-  active: "Move the highest-value items through the sprint.",
-  blocked: "Expose decisions, missing context, and access friction.",
-  ready: "Package items that can be handed off or shipped.",
-  done: "Keep completed examples visible for reuse.",
-};
-
-function scoreItem(item: WorkItem) {
-  const statusBoost = { backlog: 0, active: 10, blocked: -12, ready: 18, done: 8 }[item.status];
-  return item.priority * 18 + item.value * 14 - item.friction * 9 - item.effort * 4 + statusBoost;
-}
-
 function App() {
-  const [items, setItems] = useState<WorkItem[]>(sample.items);
-  const [checks, setChecks] = useState<QualityCheck[]>(sample.checks);
-  const [selectedId, setSelectedId] = useState(sample.items[0]?.id ?? "");
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ItemStatus | "all">("all");
-  const [sortMode, setSortMode] = useState<"score" | "effort" | "friction">("score");
-  const [report, setReport] = useState("");
+  const [schema, setSchema] = useState<FormSchema>(sampleFormSchema);
+  const [mapping, setMapping] = useState<FieldMapping>(sampleFieldMapping);
+  const [submissions, setSubmissions] = useState<SubmissionRow[]>(sampleSubmissions);
+  const [csvText, setCsvText] = useState(() => serializeCsv(sampleSubmissions, deriveExportColumns(sampleFormSchema, sampleFieldMapping)));
+  const [csvMessage, setCsvMessage] = useState("Ready with fictional sample submissions.");
 
-  const appStyle = {
-    "--accent": sample.theme.accent,
-    "--accent-2": sample.theme.accent2,
-    "--ink": sample.theme.ink,
-    "--soft": sample.theme.soft,
-    "--warm": sample.theme.warm,
-  } as CSSProperties;
+  const exportColumns = useMemo(() => deriveExportColumns(schema, mapping), [mapping, schema]);
+  const summary = useMemo(() => summarizeDashboard(submissions, schema, mapping), [mapping, schema, submissions]);
 
-  const filteredItems = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    return [...items]
-      .filter((item) => statusFilter === "all" || item.status === statusFilter)
-      .filter((item) => !normalized || [item.title, item.category, item.owner, item.notes].join(" ").toLowerCase().includes(normalized))
-      .sort((left, right) => {
-        if (sortMode === "effort") return left.effort - right.effort;
-        if (sortMode === "friction") return left.friction - right.friction;
-        return scoreItem(right) - scoreItem(left);
-      });
-  }, [items, query, sortMode, statusFilter]);
-
-  const selected = items.find((item) => item.id === selectedId) ?? items[0];
-  const readyCount = items.filter((item) => item.status === "ready" || item.status === "done").length;
-  const blockedCount = items.filter((item) => item.status === "blocked").length;
-  const averageScore = Math.round(items.reduce((sum, item) => sum + scoreItem(item), 0) / Math.max(1, items.length));
-  const checklistScore = checks.reduce((sum, check) => sum + (check.passed ? check.weight : 0), 0);
-  const readiness = Math.min(99, Math.max(20, averageScore + checklistScore - blockedCount * 7));
-  const topItem = filteredItems[0] ?? selected;
-
-  function updateItem(id: string, patch: Partial<WorkItem>) {
-    setItems((current) => current.map((item) => (item.id === id ? { ...item, ...patch } : item)));
+  function handleSampleSubmit(values: Record<string, string>) {
+    const nextSubmission = createSubmissionFromValues(schema, values, mapping, "new");
+    setSubmissions((current) => [nextSubmission, ...current]);
+    setCsvMessage("Sample form submission added to the dashboard queue.");
   }
 
-  function advanceItem(id: string) {
-    const item = items.find((candidate) => candidate.id === id);
-    if (!item) return;
-    const nextIndex = Math.min(statusOrder.length - 1, statusOrder.indexOf(item.status) + 1);
-    updateItem(id, { status: statusOrder[nextIndex] });
+  function handleStatusChange(rowIndex: number, status: SubmissionStatus) {
+    const statusColumn = mapping.status ?? "Status";
+    setSubmissions((current) => current.map((row, index) => (index === rowIndex ? { ...row, [statusColumn]: status } : row)));
   }
 
-  function addWorkItem() {
-    const nextNumber = items.length + 1;
-    const item: WorkItem = {
-      id: `new-${Date.now()}`,
-      title: `${sample.subtitle} item ${nextNumber}`,
-      category: "Intake",
-      owner: "Fox & Hen",
-      status: "backlog",
-      priority: 3,
-      effort: 2,
-      friction: 2,
-      value: 4,
-      due: "24h",
-      notes: `New fictional ${sample.serviceLine.toLowerCase()} item added from the live demo.`,
-    };
-    setItems((current) => [item, ...current]);
-    setSelectedId(item.id);
+  function handleImportCsv() {
+    try {
+      const rows = parseCsv(csvText);
+      setSubmissions(rows);
+      setCsvMessage(`Imported ${rows.length} CSV rows into the dashboard.`);
+    } catch (error) {
+      setCsvMessage(error instanceof Error ? error.message : "CSV import failed.");
+    }
   }
 
-  function toggleCheck(id: string) {
-    setChecks((current) => current.map((check) => (check.id === id ? { ...check, passed: !check.passed } : check)));
+  function handleExportCsv() {
+    const exported = serializeCsv(submissions, exportColumns);
+    setCsvText(exported);
+    setCsvMessage(`Exported ${submissions.length} dashboard rows to CSV.`);
+    return exported;
   }
 
-  function runSprintSimulation() {
-    const ranked = [...items].sort((left, right) => scoreItem(right) - scoreItem(left)).slice(0, 3).map((item) => item.id);
-    setItems((current) =>
-      current.map((item) =>
-        ranked.includes(item.id)
-          ? { ...item, status: item.status === "blocked" ? "ready" : "active", friction: Math.max(1, item.friction - 1) }
-          : item,
-      ),
-    );
-    setChecks((current) => current.map((check) => ({ ...check, passed: check.id === "friction" ? true : check.passed })));
-  }
-
-  function generateReport() {
-    const lines = [
-      `${sample.title} handoff report`,
-      `Workflow: ${sample.serviceLine}`,
-      `Readiness: ${readiness}%`,
-      `Best next move: ${topItem.title} (${statusLabels[topItem.status]}, score ${scoreItem(topItem)})`,
-      "",
-      "Prioritized work:",
-      ...filteredItems.slice(0, 5).map((item, index) => `${index + 1}. ${item.title} — ${item.category}, owner ${item.owner}, due ${item.due}, score ${scoreItem(item)}`),
-      "",
-      "Quality gates still open:",
-      ...(checks.filter((check) => !check.passed).map((check) => `- ${check.label}`).length ? checks.filter((check) => !check.passed).map((check) => `- ${check.label}`) : ["- None"]),
-      "",
-      "Fork notes:",
-      ...sample.deliverables.map((deliverable) => `- Keep: ${deliverable}`),
-    ];
-    setReport(lines.join("\n"));
-  }
-
-  function downloadJson() {
-    const payload = JSON.stringify({ generatedAt: new Date().toISOString(), readiness, workflow: sample.serviceLine, items, checks, deliverables: sample.deliverables }, null, 2);
-    const url = URL.createObjectURL(new Blob([payload], { type: "application/json" }));
+  function handleDownloadCsv() {
+    const exported = handleExportCsv();
+    const url = URL.createObjectURL(new Blob([exported], { type: "text/csv" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${sample.repoName}-handoff.json`;
+    link.download = "foxhen-form-to-dashboard-submissions.csv";
     link.click();
     URL.revokeObjectURL(url);
   }
 
   return (
-    <div className="app-shell" style={appStyle}>
+    <div className="app-shell">
       <header className="site-header">
         <a className="brand" href="https://foxandhenllc.com">
           <span className="brand-mark">F&amp;H</span>
           <span>
             <strong>Fox &amp; Hen</strong>
-            <small>{sample.title}</small>
+            <small>Form-to-dashboard starter</small>
           </span>
         </a>
-        <nav>
-          <a href="#board">Board</a>
-          <a href="#template">Workflow</a>
-          <a href="#inspector">Inspector</a>
-          <a className="nav-button" href={sample.repositoryUrl}>Fork repo</a>
+        <nav aria-label="Primary navigation">
+          <a href="#designer">Designer</a>
+          <a href="#dashboard">Dashboard</a>
+          <a href="#csv">CSV</a>
+          <a href="#adapters">Adapters</a>
         </nav>
       </header>
 
       <main>
         <section className="hero">
-          <div>
-            <p className="service-line">{sample.serviceLine}</p>
-            <h1>{sample.description}</h1>
-            <p className="lede">A forkable, public-safe operating tool with fictional data, editable scoring, workflow gates, a handoff report, and JSON export for adapting into your own {sample.subtitle} process.</p>
+          <div className="hero-copy">
+            <p className="eyebrow">Reusable React + TypeScript + Vite workflow starter</p>
+            <h1>Turn a form schema into a mapped intake dashboard.</h1>
+            <p className="lede">
+              Design public-safe intake fields, preview a sample form, route fictional submissions through a status pipeline,
+              and export clean CSV rows for Google Sheets, Airtable, Supabase, or a non-public production build.
+            </p>
             <div className="hero-actions">
-              <button type="button" className="primary-action" onClick={runSprintSimulation}>Run 24h sprint simulation</button>
-              <button type="button" className="secondary-action" onClick={generateReport}>Generate handoff report</button>
+              <a className="primary-action" href="#designer">Customize schema</a>
+              <a className="secondary-action" href="#csv">Import or export CSV</a>
             </div>
           </div>
-          <aside className="score-console">
-            <div className="console-topline">
-              <span>Live readiness</span>
-              <strong>{readiness}%</strong>
-            </div>
-            <div className="meter"><span style={{ width: `${readiness}%` }} /></div>
-            <div className="metric-grid">
-              <article><span>Packaged</span><strong>{readyCount}</strong><small>ready or done</small></article>
-              <article><span>Blocked</span><strong>{blockedCount}</strong><small>needs decision</small></article>
-              <article><span>Best next</span><strong>{scoreItem(topItem)}</strong><small>{topItem.title}</small></article>
-            </div>
-          </aside>
+          <KpiCards summary={summary} />
         </section>
 
-        <section id="template" className="template-strip">
-          <div>
-            <p className="service-line">Forkable workflow template</p>
-            <h2>Use this as a starter operating loop, not a static board.</h2>
-          </div>
-          <div className="stage-grid">
-            {statusOrder.map((status) => (
-              <article key={status}>
-                <span className={`status ${status}`}>{statusLabels[status]}</span>
-                <strong>{items.filter((item) => item.status === status).length} items</strong>
-                <p>{stageCopy[status]}</p>
-              </article>
-            ))}
-          </div>
+        <section id="designer" className="two-column">
+          <SchemaDesigner schema={schema} onSchemaChange={setSchema} />
+          <SampleForm schema={schema} onSubmit={handleSampleSubmit} />
         </section>
 
-        <section id="board" className="board-layout">
+        <section id="dashboard" className="dashboard-section">
           <div className="section-heading">
-            <p>Working tool</p>
-            <h2>Prioritize, edit, advance, and package this {sample.subtitle} sample.</h2>
+            <p>Mapped dashboard</p>
+            <h2>Pipeline, KPI cards, and rows all read from the same field mapping.</h2>
           </div>
-
-          <div className="controls">
-            <input aria-label="Search work items" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search title, owner, category, notes..." />
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as ItemStatus | "all")}>
-              <option value="all">All statuses</option>
-              {statusOrder.map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}
-            </select>
-            <select value={sortMode} onChange={(event) => setSortMode(event.target.value as "score" | "effort" | "friction")}>
-              <option value="score">Sort by payout score</option>
-              <option value="effort">Sort by fastest effort</option>
-              <option value="friction">Sort by lowest friction</option>
-            </select>
-            <button type="button" onClick={addWorkItem}>Add fictional item</button>
-          </div>
-
-          <div className="work-grid">
-            <div className="item-list">
-              {filteredItems.map((item) => (
-                <button key={item.id} type="button" className={item.id === selected.id ? "item-card selected" : "item-card"} onClick={() => setSelectedId(item.id)}>
-                  <span className={`status ${item.status}`}>{statusLabels[item.status]}</span>
-                  <strong>{item.title}</strong>
-                  <small>{item.category} · {item.owner} · due {item.due}</small>
-                  <div className="score-row"><span>P{item.priority}</span><span>V{item.value}</span><span>E{item.effort}</span><span>F{item.friction}</span></div>
-                  <em>Score {scoreItem(item)}</em>
-                </button>
-              ))}
-            </div>
-
-            <aside id="inspector" className="inspector">
-              <div className="inspector-header">
-                <span className={`status ${selected.status}`}>{statusLabels[selected.status]}</span>
-                <button type="button" onClick={() => advanceItem(selected.id)}>Advance status</button>
-              </div>
-              <h3>{selected.title}</h3>
-              <p className="inspector-note">Tune owner, notes, and scoring to see how the handoff package changes.</p>
-              <label>Owner<input value={selected.owner} onChange={(event) => updateItem(selected.id, { owner: event.target.value })} /></label>
-              <label>Notes<textarea value={selected.notes} onChange={(event) => updateItem(selected.id, { notes: event.target.value })} /></label>
-              <div className="slider-grid">
-                {(["priority", "value", "effort", "friction"] as const).map((field) => (
-                  <label key={field}>{field}
-                    <input type="range" min="1" max="5" value={selected[field]} onChange={(event) => updateItem(selected.id, { [field]: Number(event.target.value) } as Partial<WorkItem>)} />
-                    <span>{selected[field]}</span>
-                  </label>
-                ))}
-              </div>
-            </aside>
-          </div>
+          <StatusPipeline summary={summary} />
+          <SubmissionsTable rows={submissions} mapping={mapping} onStatusChange={handleStatusChange} />
         </section>
 
-        <section className="package-grid">
-          <div className="checklist-card">
-            <p className="service-line">QA gates</p>
-            <h2>Toggle the checks that make this workflow ready to reuse.</h2>
-            <div className="check-list">
-              {checks.map((check) => (
-                <button key={check.id} type="button" className={check.passed ? "check passed" : "check"} onClick={() => toggleCheck(check.id)}>
-                  <span>{check.passed ? "✓" : "○"}</span>
-                  {check.label}
-                  <em>{check.weight} pts</em>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="report-card">
-            <p className="service-line">Export</p>
-            <h2>Generate a buyer-readable package.</h2>
-            <ul className="deliverable-list">
-              {sample.deliverables.map((deliverable) => <li key={deliverable}>{deliverable}</li>)}
-            </ul>
-            <div className="hero-actions">
-              <button type="button" className="primary-action" onClick={generateReport}>Refresh report</button>
-              <button type="button" className="secondary-action" onClick={downloadJson}>Download JSON</button>
-            </div>
-            <textarea className="report-output" value={report || "Click Generate handoff report to create a live summary from the current board state."} onChange={(event) => setReport(event.target.value)} />
-          </div>
+        <section id="csv" className="two-column">
+          <FieldMappingPanel schema={schema} mapping={mapping} onMappingChange={setMapping} />
+          <CsvPanel
+            csvText={csvText}
+            message={csvMessage}
+            onCsvTextChange={setCsvText}
+            onDownloadCsv={handleDownloadCsv}
+            onExportCsv={handleExportCsv}
+            onImportCsv={handleImportCsv}
+          />
         </section>
+
+        <AdapterDocs notes={adapterNotes} />
       </main>
     </div>
   );

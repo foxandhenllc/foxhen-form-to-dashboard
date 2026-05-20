@@ -1,0 +1,4 @@
+Submitted At,Company,Contact Email,Service Need,Budget Range,Urgency,Status,Notes
+2026-05-01T14:00:00.000Z,Acorn Atelier,ops@example.test,Dashboard repair,$2k-$5k,5,review,"Needs a weekly owner queue and KPI summary."
+2026-05-02T16:30:00.000Z,Bramble Books,hello@example.test,Lead intake,$5k-$10k,4,qualified,"Ready for proposal once intake fields are mapped."
+2026-05-03T10:15:00.000Z,Clover Clinic,team@example.test,CRM cleanup,Under $2k,2,new,"Wants a lightweight spreadsheet adapter first."

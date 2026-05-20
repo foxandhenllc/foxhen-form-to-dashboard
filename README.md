@@ -1,45 +1,62 @@
 # Form To Dashboard
 
-Public Fox & Hen working sample for a **form and dashboard automation**.
+Reusable Fox & Hen starter for turning a form schema into a lightweight intake dashboard.
 
-![Demo screenshot](docs/demo-screenshot.png)
+This repo stays intentionally static: React + TypeScript + Vite, fictional fixtures, no backend, no auth, no credentials, and no real client data.
+
+## What It Includes
+
+- Form schema designer for field labels, field types, required flags, help text, and select options.
+- Sample form that creates local fictional submissions from the active schema.
+- Field mapping panel that connects form columns to dashboard roles such as title, contact, category, value, urgency, status, and notes.
+- KPI cards, status pipeline, and searchable submissions table powered by the mapped CSV-style rows.
+- CSV import, CSV export text, CSV download, and fixture-based smoke coverage for import/export/dashboard summaries.
+- Adapter guidance for Google Sheets, Airtable, and Supabase without adding service credentials.
+
+## Local Workflow
+
+```bash
+npm install
+npm run dev
+npm run test:smoke
+npm run typecheck
+npm run build
+```
+
+A copy-ready CI workflow lives at `docs/github-actions/build.yml.example`; move it to `.github/workflows/build.yml` after GitHub auth has the `workflow` scope.
+
+## Starter Usage
+
+1. Open the app and update the schema in the **Form schema designer**.
+2. Preview the **Sample form** and submit fictional rows to verify field behavior.
+3. Use **Field mapping** to align columns with dashboard roles.
+4. Review KPI cards, the status pipeline, and the submissions table.
+5. Paste or upload CSV text, import it, then export a clean CSV for the next tool.
+
+## Adapter Notes
+
+- **Google Sheets:** export a responses sheet as CSV, validate field mapping here, then paste normalized rows into a dashboard tab.
+- **Airtable:** keep field labels aligned, import the starter CSV, and create views by Status, Service Need, and Urgency.
+- **Supabase:** use this as the public-safe prototype first; add tables, credentials, auth, and policies only in a non-public implementation.
+
+## Client Customization
+
+- Replace labels, select options, and sample rows with fictional equivalents from the client workflow.
+- Keep public examples masked with `.test` emails, invented company names, and safe budget bands.
+- Add live integrations in a separate non-public repo after the schema and mapping are approved.
+
+## Docs
+
+- [Public-safe data rules](docs/public-safe-data.md)
+- [Customization guide](docs/customization-guide.md)
+- [Client brief template](docs/client-brief-template.md)
+- [Workflow template](docs/workflow-template.md)
 
 ## Live Demo
 
 - Demo: [https://foxhen-form-to-dashboard.vercel.app](https://foxhen-form-to-dashboard.vercel.app)
 - Repository: [https://github.com/foxandhenllc/foxhen-form-to-dashboard](https://github.com/foxandhenllc/foxhen-form-to-dashboard)
 
-## What This Demo Is
+## License
 
-Form To Dashboard is a forkable React/Vite operating tool for teams that want to normalize fictional form responses into queues, urgency signals, KPI summaries, and weekly notes. It is intentionally small, static, and public-safe so you can copy the pattern without inheriting a backend or vendor lock-in.
-
-## Fully Working Behaviors
-
-- Search, filter, and sort a domain-specific workflow board.
-- Add a fictional item and edit owner, notes, priority, value, effort, and friction.
-- Advance status and watch readiness metrics update in real time.
-- Run a 24-hour sprint simulation to reduce friction on the highest-scoring work.
-- Toggle QA gates, generate a handoff report, and download the board as JSON.
-
-## Workflow Template
-
-See [docs/workflow-template.md](docs/workflow-template.md) for the sample intake-to-dashboard loop, adaptation checklist, and public-safe data rules.
-
-## Suggested Forks
-
-- Map your form fields to title, category, owner, due, and notes.
-- Treat friction as missing information or manual review cost.
-- Use checks as dashboard publishing gates.
-- Export JSON for a static dashboard seed or Sheets import.
-
-## Local Run
-
-```bash
-npm install
-npm run dev
-npm run build
-```
-
-## Public-Safe Scope
-
-This is a static React/Vite demo with fictional sample data. It includes no production data, credentials, real contacts, copied customer work, backend, auth, or external service calls.
+MIT — see [LICENSE](LICENSE).
