@@ -11,6 +11,7 @@ This repo stays intentionally static: React + TypeScript + Vite, fictional fixtu
 - Field mapping panel that connects form columns to dashboard roles such as title, contact, category, value, urgency, status, and notes.
 - KPI cards, status pipeline, and searchable submissions table powered by the mapped CSV-style rows.
 - CSV import, CSV export text, CSV download, and fixture-based smoke coverage for import/export/dashboard summaries.
+- Browser localStorage persistence for schema, mapping, rows, and CSV text, plus reset-to-sample and project JSON import/export.
 - Adapter guidance for Google Sheets, Airtable, and Supabase without adding service credentials.
 
 ## Local Workflow
@@ -18,7 +19,7 @@ This repo stays intentionally static: React + TypeScript + Vite, fictional fixtu
 ```bash
 npm install
 npm run dev
-npm run test:smoke
+npm test
 npm run typecheck
 npm run build
 ```
@@ -31,7 +32,8 @@ A copy-ready CI workflow lives at `docs/github-actions/build.yml.example`; move 
 2. Preview the **Sample form** and submit fictional rows to verify field behavior.
 3. Use **Field mapping** to align columns with dashboard roles.
 4. Review KPI cards, the status pipeline, and the submissions table.
-5. Paste or upload CSV text, import it, then export a clean CSV for the next tool.
+5. Use **Browser project** controls to download or import a JSON backup.
+6. Paste or upload CSV text, import it, then export a clean CSV for the next tool.
 
 ## Adapter Notes
 
