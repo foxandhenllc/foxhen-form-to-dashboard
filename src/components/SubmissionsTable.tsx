@@ -53,6 +53,13 @@ export function SubmissionsTable({ rows, mapping, onStatusChange }: SubmissionsT
             </tr>
           </thead>
           <tbody>
+            {visibleRows.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length + 1} className="empty-table-cell">
+                  No submissions match the current search and status filters.
+                </td>
+              </tr>
+            ) : null}
             {visibleRows.map(({ row, rowIndex }) => {
               const status = normalizeStatus(row[statusColumn]);
               return (

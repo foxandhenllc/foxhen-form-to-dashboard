@@ -154,14 +154,16 @@ h1 {
   margin-bottom: 1.4rem;
   font-size: clamp(3rem, 7vw, 6.6rem);
   line-height: 0.9;
-  letter-spacing: -0.08em;
+  letter-spacing: -0.045em;
+  word-spacing: 0.06em;
 }
 
 h2 {
   margin-bottom: 1rem;
   font-size: clamp(1.9rem, 4vw, 3.9rem);
   line-height: 0.96;
-  letter-spacing: -0.065em;
+  letter-spacing: -0.04em;
+  word-spacing: 0.04em;
 }
 
 h3 {
@@ -258,7 +260,8 @@ h3 {
   text-align: right;
   font-size: clamp(1.4rem, 4vw, 2.6rem);
   line-height: 0.98;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.035em;
+  word-spacing: 0.03em;
 }
 
 .kpi-grid {
@@ -561,6 +564,12 @@ td {
   max-width: 22rem;
   color: #637066;
   font-weight: 650;
+}
+
+.empty-table-cell {
+  background: rgba(73, 98, 56, 0.08);
+  color: #496238;
+  text-align: center;
 }
 
 .csv-actions {
