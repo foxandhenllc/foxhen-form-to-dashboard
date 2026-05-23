@@ -124,7 +124,7 @@ main {
   grid-template-columns: minmax(0, 1fr) minmax(420px, 0.72fr);
   gap: clamp(2rem, 5vw, 5rem);
   align-items: center;
-  min-height: 720px;
+  min-height: clamp(560px, 72vh, 680px);
   padding: 8rem 0 3rem;
 }
 
