@@ -23,5 +23,20 @@
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "description": "Use this repo to design a form schema, map fields, view submissions, track KPIs, and import/export CSV data.",
+  "keywords": [
+    "business",
+    "csv",
+    "dashboard",
+    "form",
+    "fox-and-hen",
+    "intake",
+    "small",
+    "small-business",
+    "starter",
+    "template",
+    "workflow",
+    "workflow-tools"
+  ]
 }

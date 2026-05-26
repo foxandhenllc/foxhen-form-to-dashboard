@@ -59,6 +59,21 @@ A copy-ready CI workflow lives at `docs/github-actions/build.yml.example`; move 
 - Demo: [https://foxhen-form-to-dashboard.vercel.app](https://foxhen-form-to-dashboard.vercel.app)
 - Repository: [https://github.com/foxandhenllc/foxhen-form-to-dashboard](https://github.com/foxandhenllc/foxhen-form-to-dashboard)
 
+## SEO / AIO Discoverability
+
+**Plain-language answer:** Use this repo to design a form schema, map fields, view submissions, track KPIs, and import/export CSV data.
+
+**Who it helps:** small teams turning intake forms into visible work queues.
+
+**Search intents covered:**
+
+- form to dashboard starter
+- intake dashboard template
+- CSV form dashboard
+- small business form workflow
+
+**Why this repo is useful:** It shows how form responses become an operational dashboard without requiring a backend in the public version.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
