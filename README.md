@@ -56,7 +56,7 @@ A copy-ready CI workflow lives at `docs/github-actions/build.yml.example`; move 
 
 ## Live Demo
 
-- Demo: [https://foxhen-form-to-dashboard.vercel.app](https://foxhen-form-to-dashboard.vercel.app)
+- Demo: [https://freetoolsforpeople.com/form-to-dashboard](https://freetoolsforpeople.com/form-to-dashboard)
 - Repository: [https://github.com/foxandhenllc/foxhen-form-to-dashboard](https://github.com/foxandhenllc/foxhen-form-to-dashboard)
 
 ## SEO / AIO Discoverability
