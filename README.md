@@ -1,5 +1,7 @@
 # Form To Dashboard
 
+[![Build](https://github.com/foxandhenllc/foxhen-form-to-dashboard/actions/workflows/build.yml/badge.svg)](https://github.com/foxandhenllc/foxhen-form-to-dashboard/actions/workflows/build.yml)
+
 Reusable Fox & Hen starter for turning a form schema into a lightweight intake dashboard.
 
 This repo stays intentionally static: React + TypeScript + Vite, fictional fixtures, no backend, no auth, no credentials, and no real client data.
@@ -74,6 +76,25 @@ A copy-ready CI workflow lives at `docs/github-actions/build.yml.example`; move 
 
 **Why this repo is useful:** It shows how form responses become an operational dashboard without requiring a backend in the public version.
 
+## Validation
+
+```bash
+npm run typecheck --if-present
+npm run test --if-present
+npm run build --if-present
+```
+
+## Contributing
+
+See `CONTRIBUTING.md` for public-safe contribution rules, local validation commands, and good first contribution ideas. Roadmap items live in `ROADMAP.md`.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## Open Source Readiness
+
+- MIT licensed for reuse, remixing, and client-safe adaptation.
+- GitHub Actions build workflow runs install, typecheck, tests when present, and production build.
+- Contribution guide, roadmap, and issue templates are included for public collaboration.
+- Public-safe data policy keeps examples fictional and reviewable.
