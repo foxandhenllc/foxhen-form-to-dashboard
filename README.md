@@ -26,7 +26,7 @@ npm run typecheck
 npm run build
 ```
 
-A copy-ready CI workflow lives at `docs/github-actions/build.yml.example`; move it to `.github/workflows/build.yml` after GitHub auth has the `workflow` scope.
+The active GitHub Actions build workflow lives at `.github/workflows/build.yml`; `docs/github-actions/build.yml.example` remains as a reference for forks.
 
 ## Starter Usage
 
